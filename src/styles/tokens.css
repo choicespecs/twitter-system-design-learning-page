@@ -1,0 +1,54 @@
+:root {
+  /* Color */
+  --color-bg: #0e1420;
+  --color-surface: #16202e;
+  --color-surface-secondary: #1c2836;
+  --color-border: #2a3a4d;
+  --color-text: #dce6f0;
+  --color-text-muted: #8fa3b8;
+
+  --color-accent-mint: #5fe3c0; /* category: data flow */
+  --color-accent-amber: #f2a65a; /* category: scaling/infra */
+  --color-accent-pink: #ff6f91; /* category: auxiliary */
+
+  --glow-mint: rgba(95, 227, 192, 0.35);
+  --glow-amber: rgba(242, 166, 90, 0.35);
+  --glow-pink: rgba(255, 111, 145, 0.35);
+
+  /* Spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Shadow / Glow */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-node-hover: 0 0 12px var(--glow-mint);
+
+  /* Typography */
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.5rem;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease-out;
+  --transition-slow: 250ms ease-out;
+}

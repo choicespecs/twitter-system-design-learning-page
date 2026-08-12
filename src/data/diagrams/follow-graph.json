@@ -1,0 +1,42 @@
+{
+  "basic": {
+    "viewBox": "0 0 480 160",
+    "nodes": [
+      { "id": "client", "label": "Client", "x": 60, "y": 80, "description": "Follows or unfollows a user." },
+      { "id": "api", "label": "API", "x": 230, "y": 80, "description": "Handles the follow/unfollow request." },
+      { "id": "table", "label": "follows table", "x": 400, "y": 80, "description": "A single (follower_id, followee_id) table, indexed on both columns." }
+    ],
+    "edges": [
+      { "from": "client", "to": "api" },
+      { "from": "api", "to": "table" }
+    ]
+  },
+  "scaled": {
+    "viewBox": "0 0 480 200",
+    "nodes": [
+      { "id": "action", "label": "Follow Action", "x": 50, "y": 100, "description": "A user follows another user." },
+      { "id": "api", "label": "API", "x": 190, "y": 100, "description": "Writes to both denormalized sets." },
+      { "id": "following", "label": "Following Set", "x": 380, "y": 50, "description": "Per-user set of who they follow — O(1) membership check." },
+      { "id": "followers", "label": "Followers Set", "x": 380, "y": 150, "description": "Per-user set of who follows them — the set that can be enormous for celebrities." }
+    ],
+    "edges": [
+      { "from": "action", "to": "api" },
+      { "from": "api", "to": "following" },
+      { "from": "api", "to": "followers" }
+    ]
+  },
+  "advanced": {
+    "viewBox": "0 0 480 220",
+    "nodes": [
+      { "id": "writeop", "label": "Write Op", "x": 50, "y": 110, "description": "A follow/unfollow action." },
+      { "id": "following", "label": "Following Set", "x": 220, "y": 55, "description": "Updated synchronously with the write." },
+      { "id": "followers", "label": "Followers Set", "x": 220, "y": 165, "description": "Updated synchronously; read via paginated cursor by batch jobs, never loaded whole." },
+      { "id": "counter", "label": "Async Counter", "x": 400, "y": 110, "description": "Eventually-consistent aggregator that powers the displayed follower count." }
+    ],
+    "edges": [
+      { "from": "writeop", "to": "following" },
+      { "from": "writeop", "to": "followers" },
+      { "from": "writeop", "to": "counter" }
+    ]
+  }
+}

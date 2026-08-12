@@ -1,0 +1,53 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import Header from "../components/Header.astro";
+import SidebarNav from "../components/SidebarNav.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="shell">
+    <Header />
+    <div class="body">
+      <SidebarNav />
+      <main class="main">
+        <slot />
+      </main>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .body {
+    display: flex;
+    flex: 1;
+  }
+
+  .main {
+    flex: 1;
+    padding: var(--space-6) var(--space-7);
+    max-width: 900px;
+  }
+
+  @media (max-width: 800px) {
+    .body {
+      flex-direction: column;
+    }
+
+    .main {
+      padding: var(--space-4) var(--space-5);
+    }
+  }
+</style>

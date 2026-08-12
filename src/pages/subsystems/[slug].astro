@@ -1,0 +1,93 @@
+---
+import { getCollection, render } from "astro:content";
+import AppShell from "../../layouts/AppShell.astro";
+import DiagramCanvas from "../../components/DiagramCanvas";
+import TechBadge from "../../components/TechBadge.astro";
+import { CATEGORY_META } from "../../lib/categories";
+import type { DiagramConfig } from "../../lib/diagram-types";
+
+export async function getStaticPaths() {
+  const subsystems = await getCollection("subsystems");
+  return subsystems.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const meta = CATEGORY_META[entry.data.category];
+
+const diagramModules = import.meta.glob("/src/data/diagrams/*.json", { eager: true }) as Record<
+  string,
+  { default: DiagramConfig }
+>;
+const diagramConfig = diagramModules[`/src/data/diagrams/${entry.id}.json`]?.default;
+---
+
+<AppShell title={entry.data.title} description={entry.data.teaser}>
+  <p class="eyebrow" style={`color: ${meta.color}`}>{meta.label}</p>
+  <h1>{entry.data.title}</h1>
+  <p class="teaser">{entry.data.teaser}</p>
+
+  {
+    entry.data.techChoices.length > 0 && (
+      <div class="badges">
+        {entry.data.techChoices.map((tech: string) => (
+          <TechBadge label={tech} accent={meta.color} />
+        ))}
+      </div>
+    )
+  }
+
+  {
+    diagramConfig ? (
+      <DiagramCanvas client:visible config={diagramConfig} accent={meta.color} accentGlow={meta.glow} />
+    ) : (
+      <p class="empty">// diagram not yet documented</p>
+    )
+  }
+
+  <div class="prose">
+    <Content />
+  </div>
+</AppShell>
+
+<style>
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: var(--space-2);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-3);
+  }
+
+  .teaser {
+    color: var(--color-text-muted);
+    max-width: 640px;
+    margin-bottom: var(--space-5);
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+  }
+
+  .empty {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+</style>

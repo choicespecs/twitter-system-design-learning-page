@@ -1,0 +1,40 @@
+{
+  "basic": {
+    "viewBox": "0 0 480 160",
+    "nodes": [
+      { "id": "client", "label": "Client", "x": 60, "y": 80, "description": "Submits a search query." },
+      { "id": "api", "label": "API", "x": 230, "y": 80, "description": "Forwards the query to storage." },
+      { "id": "scan", "label": "Full Table Scan", "x": 400, "y": 80, "description": "LIKE-match scan over the entire tweet table — too slow at scale." }
+    ],
+    "edges": [
+      { "from": "client", "to": "api" },
+      { "from": "api", "to": "scan" }
+    ]
+  },
+  "scaled": {
+    "viewBox": "0 0 480 200",
+    "nodes": [
+      { "id": "write", "label": "Tweet Write", "x": 50, "y": 55, "description": "A new tweet enters the system." },
+      { "id": "indexer", "label": "Indexing Pipeline", "x": 220, "y": 55, "description": "Tokenizes the tweet and updates the inverted index near-real-time." },
+      { "id": "index", "label": "Inverted Index", "x": 400, "y": 110, "description": "term → tweet IDs. Query time depends on postings-list size, not corpus size." },
+      { "id": "query", "label": "Search Query", "x": 50, "y": 165, "description": "Tokenized the same way, looked up directly against the index." }
+    ],
+    "edges": [
+      { "from": "write", "to": "indexer" },
+      { "from": "indexer", "to": "index" },
+      { "from": "query", "to": "index" }
+    ]
+  },
+  "advanced": {
+    "viewBox": "0 0 480 160",
+    "nodes": [
+      { "id": "stream", "label": "Tweet Stream", "x": 50, "y": 80, "description": "Same underlying write stream, consumed independently from search indexing." },
+      { "id": "counter", "label": "Windowed Term Counter", "x": 230, "y": 80, "description": "Stream processor maintaining sliding-window mention counts per term." },
+      { "id": "topk", "label": "Top-K Cache", "x": 400, "y": 80, "description": "Cached current trending list, served directly to clients." }
+    ],
+    "edges": [
+      { "from": "stream", "to": "counter" },
+      { "from": "counter", "to": "topk" }
+    ]
+  }
+}

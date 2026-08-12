@@ -1,0 +1,130 @@
+---
+import AppShell from "../layouts/AppShell.astro";
+import { getCollection } from "astro:content";
+import { CATEGORY_META, type Category } from "../lib/categories";
+import { withBase } from "../lib/url";
+
+const subsystems = await getCollection("subsystems");
+
+const grouped = (Object.keys(CATEGORY_META) as Category[]).map((category) => ({
+  category,
+  meta: CATEGORY_META[category],
+  items: subsystems
+    .filter((s) => s.data.category === category)
+    .sort((a, b) => a.data.order - b.data.order),
+}));
+---
+
+<AppShell title="Home">
+  <header class="intro">
+    <h1>Twitter System Design</h1>
+    <p>
+      An interview-scoped walkthrough of how Twitter's core subsystems work —
+      each one built up from the naive first-pass answer to the scaled,
+      production-shaped version, the way you'd actually talk through it in a
+      room.
+    </p>
+  </header>
+
+  {
+    grouped.map(({ category, meta, items }) => (
+      <section class="category">
+        <h2 style={`color: ${meta.color}`}>{meta.label}</h2>
+        {items.length > 0 ? (
+          <div class="grid">
+            {items.map((item) => (
+              <a href={withBase(`/subsystems/${item.id}`)} class="card" style={`--accent: ${meta.color}; --accent-glow: ${meta.glow};`}>
+                <span class="card-bar" />
+                <h3>{item.data.title}</h3>
+                <p>{item.data.teaser}</p>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <p class="empty">// not yet documented</p>
+        )}
+      </section>
+    ))
+  }
+</AppShell>
+
+<style>
+  .intro {
+    margin-bottom: var(--space-7);
+    max-width: 640px;
+  }
+
+  .intro h1 {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-3);
+  }
+
+  .intro p {
+    color: var(--color-text-muted);
+    font-size: var(--text-base);
+  }
+
+  .category {
+    margin-bottom: var(--space-7);
+  }
+
+  .category h2 {
+    font-size: var(--text-sm);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: var(--space-4);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .card {
+    position: relative;
+    display: block;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-card);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    overflow: hidden;
+  }
+
+  .card-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: 0 0 16px var(--accent-glow), var(--shadow-card);
+  }
+
+  .card h3 {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-2);
+  }
+
+  .card p {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .empty {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+  }
+</style>
