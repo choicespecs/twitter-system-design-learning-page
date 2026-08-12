@@ -14,6 +14,14 @@ usually the first subsystem discussed in a Twitter interview because it
 forces you to immediately confront a read/write tradeoff that shapes
 everything else.
 
+**Scope check, worth stating out loud early**: "everyone they follow" needs
+to include the user *themselves* — your own tweets appear in your own home
+timeline, so every approach below has to treat "follow list" as "follow
+list plus self." This is distinct from a user's **profile timeline** (just
+their own tweets, shown on their profile page), which turns out to be a
+much simpler problem — covered on its own further down, since it's a
+common follow-up question and a good one to raise proactively.
+
 ## API Design
 
 ```http
@@ -44,8 +52,9 @@ underneath the API without breaking clients.
 ### How it works
 
 At read time, when a user opens their timeline, the system fetches the IDs of
-everyone they follow, queries the most recent tweets from each of those
-users, merges the results, sorts by timestamp, and returns the top N.
+everyone they follow (plus the user's own ID), queries the most recent
+tweets from each of those accounts, merges the results, sorts by
+timestamp, and returns the top N.
 
 ```
 Client ──▶ API ──▶ [Follow list] ──▶ [Query tweets per followee] ──▶ Merge/Sort
@@ -72,11 +81,14 @@ immediately point out the read-scaling problem to motivate the next tier.
 
 Flip the cost to write time. When a user posts a tweet, the system looks up
 their follower list and pushes the tweet ID into a precomputed timeline
-cache (e.g., a Redis sorted set per user) for every follower. Reading a
+cache (e.g., a Redis sorted set per user) for every follower — **and into
+the author's own cache too**, so they see their own tweet in their own
+home timeline without needing a special case at read time. Reading a
 timeline becomes a single cheap cache lookup.
 
 ```
-Tweet Write ──▶ Fan-out Service ──▶ [Follower 1 cache]
+Tweet Write ──▶ Fan-out Service ──▶ [Author's own cache]
+                                 ├─▶ [Follower 1 cache]
                                  ├─▶ [Follower 2 cache]
                                  └─▶ [Follower N cache]
 ```
@@ -128,6 +140,33 @@ Read ──▶ [Precomputed cache: normal follows]
 - **Con**: Threshold tuning is a judgment call — too low and you lose the
   benefit of caching for mid-size accounts; too high and celebrities still
   cause fan-out spikes.
+
+## Profile Timeline — A Much Simpler Sibling
+
+Everything above is about the **home timeline**: an aggregation across many
+authors, which is exactly what makes it hard. A user's **profile
+timeline** — the tweets shown on their own profile page — is a completely
+different access pattern: it's a single author's tweets, already naturally
+grouped by that author.
+
+```http
+GET /api/users/{id}/tweets?cursor=
+```
+
+### How it works
+
+Query tweet storage filtered by `author_id`, sorted by time. If storage is
+sharded by `author_id` (as covered in Tweet Ingestion's scaled tier), this
+is a single-shard read — no fan-out, no merge step, no cache tier needed.
+
+### Why it's worth naming explicitly
+
+It's easy to let "timeline" become one undifferentiated word in an
+interview and accidentally imply the profile page needs the same
+fan-out/cache machinery as the home timeline. Explicitly separating them —
+"the home timeline is the hard aggregation problem; the profile timeline
+is just an indexed read" — heads that confusion off and shows you're
+distinguishing access patterns, not just naming components.
 
 ## Tech Choices
 

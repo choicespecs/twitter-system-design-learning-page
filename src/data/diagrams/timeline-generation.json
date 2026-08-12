@@ -20,7 +20,7 @@
         "label": "Follow List",
         "x": 350,
         "y": 55,
-        "description": "Looked up to find everyone the requesting user follows."
+        "description": "Looked up to find everyone the requesting user follows — plus the user's own ID, so their own tweets are included too."
       },
       {
         "id": "tweetstore",
@@ -66,7 +66,7 @@
         "label": "Fan-out Service",
         "x": 300,
         "y": 110,
-        "description": "Pushes the new tweet ID into every follower's precomputed timeline cache."
+        "description": "Pushes the new tweet ID into every follower's precomputed timeline cache — including the author's own cache, so they see their own tweet too."
       },
       {
         "id": "cache",
