@@ -13,6 +13,37 @@ a query (relevance search), and surfacing what's trending across the whole
 platform right now (real-time aggregation). Both start from the same tweet
 stream but need very different infrastructure to answer quickly.
 
+## API Design
+
+```http
+GET /api/search?q=world+cup&cursor=
+```
+```json
+// 200 OK
+{
+  "items": [
+    { "tweet_id": "1683072000000123", "author_id": "u_42", "text": "hello world cup fans", "score": 8.7 }
+  ],
+  "next_cursor": "eyJwYWdlIjoyfQ"
+}
+```
+```http
+GET /api/trends?geo=US
+```
+```json
+// 200 OK
+{
+  "trends": [
+    { "term": "#WorldCup", "volume": 128000 },
+    { "term": "#GameOfThrones", "volume": 54000 }
+  ]
+}
+```
+
+Two separate endpoints on purpose — mirroring the two separate pipelines
+underneath. `score` on a search result signals relevance ranking exists;
+`volume` on a trend signals it's a count, not a ranked match.
+
 ## Basic Approach — Scan and Filter
 
 ### How it works

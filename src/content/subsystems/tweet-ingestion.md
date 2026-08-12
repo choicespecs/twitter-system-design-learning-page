@@ -13,6 +13,41 @@ path that durably stores a tweet and hands back a unique ID for it. This is
 usually the very first thing to sketch in an interview because every other
 subsystem depends on it.
 
+## API Design
+
+```http
+POST /api/tweets
+```
+```json
+// request
+{ "text": "hello world", "media_ids": ["m_9f2a"] }
+
+// 201 Created
+{
+  "id": "1683072000000123",
+  "text": "hello world",
+  "author_id": "u_42",
+  "media_ids": ["m_9f2a"],
+  "created_at": "2026-08-12T10:00:00Z"
+}
+```
+```http
+GET /api/tweets/{id}
+```
+```json
+// 200 OK
+{
+  "id": "1683072000000123",
+  "text": "hello world",
+  "author_id": "u_42",
+  "created_at": "2026-08-12T10:00:00Z"
+}
+```
+
+The `id` in the response is the Snowflake-generated ID, not a database
+auto-increment value — worth calling out explicitly, since it's the field
+that changes shape as the design scales from the basic to the scaled tier.
+
 ## Basic Approach — Single Database, Auto-Increment ID
 
 ### How it works

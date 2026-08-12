@@ -1,8 +1,20 @@
 import { useId, useMemo, useState } from "react";
-import type { DiagramConfig, TierKey } from "../lib/diagram-types";
+import type { DiagramConfig, DiagramNodeData, TierKey } from "../lib/diagram-types";
+import { NODE_WIDTH, NODE_HEIGHT, CANVAS_PADDING } from "../lib/diagram-constants";
 import DiagramNode from "./DiagramNode";
 import DiagramEdge from "./DiagramEdge";
 import SidePanel from "./SidePanel";
+
+/** Computes a viewBox that fits every node's full box extent, so nothing near the edges gets clipped. */
+function computeViewBox(nodes: DiagramNodeData[]) {
+  const halfW = NODE_WIDTH / 2 + CANVAS_PADDING;
+  const halfH = NODE_HEIGHT / 2 + CANVAS_PADDING;
+  const minX = Math.min(...nodes.map((n) => n.x)) - halfW;
+  const maxX = Math.max(...nodes.map((n) => n.x)) + halfW;
+  const minY = Math.min(...nodes.map((n) => n.y)) - halfH;
+  const maxY = Math.max(...nodes.map((n) => n.y)) + halfH;
+  return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
+}
 
 const TIER_LABELS: Record<TierKey, string> = {
   basic: "🌱 Basic",
@@ -27,6 +39,7 @@ export default function DiagramCanvas({ config, accent, accentGlow }: Props) {
   const active = config[tier];
   const nodeMap = useMemo(() => new Map(active.nodes.map((n) => [n.id, n])), [active]);
   const selectedNode = selectedId ? nodeMap.get(selectedId) ?? null : null;
+  const viewBox = useMemo(() => computeViewBox(active.nodes), [active]);
 
   const handleTierChange = (next: TierKey) => {
     setTier(next);
@@ -53,7 +66,7 @@ export default function DiagramCanvas({ config, accent, accentGlow }: Props) {
       </div>
 
       <div className="canvas-frame">
-        <svg viewBox={active.viewBox} className="svg" role="group" aria-label={`${tier} diagram`}>
+        <svg viewBox={viewBox} className="svg" role="group" aria-label={`${tier} diagram`}>
           <defs>
             <marker
               id={`arrow-${markerId}`}

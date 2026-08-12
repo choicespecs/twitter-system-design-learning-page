@@ -1,46 +1,151 @@
 {
   "basic": {
-    "viewBox": "0 0 480 220",
     "nodes": [
-      { "id": "client", "label": "Client", "x": 40, "y": 110, "description": "Requests the home timeline when the user opens the app." },
-      { "id": "api", "label": "API", "x": 190, "y": 110, "description": "Receives the read request and orchestrates the query fan-in." },
-      { "id": "followgraph", "label": "Follow List", "x": 350, "y": 55, "description": "Looked up to find everyone the requesting user follows." },
-      { "id": "tweetstore", "label": "Tweet Store", "x": 350, "y": 165, "description": "Queried per-followee for recent tweets, then merged and sorted by time." }
+      {
+        "id": "client",
+        "label": "Client",
+        "x": 40,
+        "y": 110,
+        "description": "Requests the home timeline when the user opens the app."
+      },
+      {
+        "id": "api",
+        "label": "API",
+        "x": 190,
+        "y": 110,
+        "description": "Receives the read request and orchestrates the query fan-in."
+      },
+      {
+        "id": "followgraph",
+        "label": "Follow List",
+        "x": 350,
+        "y": 55,
+        "description": "Looked up to find everyone the requesting user follows."
+      },
+      {
+        "id": "tweetstore",
+        "label": "Tweet Store",
+        "x": 350,
+        "y": 165,
+        "description": "Queried per-followee for recent tweets, then merged and sorted by time."
+      }
     ],
     "edges": [
-      { "from": "client", "to": "api" },
-      { "from": "api", "to": "followgraph" },
-      { "from": "api", "to": "tweetstore" }
+      {
+        "from": "client",
+        "to": "api"
+      },
+      {
+        "from": "api",
+        "to": "followgraph"
+      },
+      {
+        "from": "api",
+        "to": "tweetstore"
+      }
     ]
   },
   "scaled": {
-    "viewBox": "0 0 480 220",
     "nodes": [
-      { "id": "write", "label": "Tweet Write", "x": 40, "y": 110, "description": "A user posts a new tweet." },
-      { "id": "queue", "label": "Queue", "x": 170, "y": 110, "description": "Kafka decouples the write from fan-out so the write API returns immediately." },
-      { "id": "fanout", "label": "Fan-out Service", "x": 300, "y": 110, "description": "Pushes the new tweet ID into every follower's precomputed timeline cache." },
-      { "id": "cache", "label": "Follower Caches", "x": 430, "y": 60, "description": "Per-user Redis sorted set — reading a timeline is now a cheap lookup here." },
-      { "id": "read", "label": "Timeline Read", "x": 430, "y": 170, "description": "Reads directly from the precomputed cache instead of querying tweets live." }
+      {
+        "id": "write",
+        "label": "Tweet Write",
+        "x": 40,
+        "y": 110,
+        "description": "A user posts a new tweet."
+      },
+      {
+        "id": "queue",
+        "label": "Queue",
+        "x": 170,
+        "y": 110,
+        "description": "Kafka decouples the write from fan-out so the write API returns immediately."
+      },
+      {
+        "id": "fanout",
+        "label": "Fan-out Service",
+        "x": 300,
+        "y": 110,
+        "description": "Pushes the new tweet ID into every follower's precomputed timeline cache."
+      },
+      {
+        "id": "cache",
+        "label": "Follower Caches",
+        "x": 430,
+        "y": 60,
+        "description": "Per-user Redis sorted set \u2014 reading a timeline is now a cheap lookup here."
+      },
+      {
+        "id": "read",
+        "label": "Timeline Read",
+        "x": 430,
+        "y": 170,
+        "description": "Reads directly from the precomputed cache instead of querying tweets live."
+      }
     ],
     "edges": [
-      { "from": "write", "to": "queue" },
-      { "from": "queue", "to": "fanout" },
-      { "from": "fanout", "to": "cache" },
-      { "from": "read", "to": "cache" }
+      {
+        "from": "write",
+        "to": "queue"
+      },
+      {
+        "from": "queue",
+        "to": "fanout"
+      },
+      {
+        "from": "fanout",
+        "to": "cache"
+      },
+      {
+        "from": "read",
+        "to": "cache"
+      }
     ]
   },
   "advanced": {
-    "viewBox": "0 0 480 220",
     "nodes": [
-      { "id": "cache", "label": "Normal-Follow Cache", "x": 50, "y": 55, "description": "Precomputed cache, same as the scaled tier — used for accounts below the celebrity threshold." },
-      { "id": "celebritystore", "label": "Celebrity Live Pull", "x": 50, "y": 170, "description": "Celebrities skip fan-out entirely; their recent tweets are pulled live at read time instead." },
-      { "id": "merge", "label": "Merge / Sort", "x": 260, "y": 110, "description": "Combines the precomputed results with the live celebrity pull and re-sorts by timestamp." },
-      { "id": "read", "label": "Timeline Response", "x": 430, "y": 110, "description": "The final hybrid timeline returned to the client." }
+      {
+        "id": "cache",
+        "label": "Normal-Follow Cache",
+        "x": 50,
+        "y": 55,
+        "description": "Precomputed cache, same as the scaled tier \u2014 used for accounts below the celebrity threshold."
+      },
+      {
+        "id": "celebritystore",
+        "label": "Celebrity Live Pull",
+        "x": 50,
+        "y": 170,
+        "description": "Celebrities skip fan-out entirely; their recent tweets are pulled live at read time instead."
+      },
+      {
+        "id": "merge",
+        "label": "Merge / Sort",
+        "x": 260,
+        "y": 110,
+        "description": "Combines the precomputed results with the live celebrity pull and re-sorts by timestamp."
+      },
+      {
+        "id": "read",
+        "label": "Timeline Response",
+        "x": 430,
+        "y": 110,
+        "description": "The final hybrid timeline returned to the client."
+      }
     ],
     "edges": [
-      { "from": "cache", "to": "merge" },
-      { "from": "celebritystore", "to": "merge" },
-      { "from": "merge", "to": "read" }
+      {
+        "from": "cache",
+        "to": "merge"
+      },
+      {
+        "from": "celebritystore",
+        "to": "merge"
+      },
+      {
+        "from": "merge",
+        "to": "read"
+      }
     ]
   }
 }

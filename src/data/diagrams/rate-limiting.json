@@ -1,42 +1,129 @@
 {
   "basic": {
-    "viewBox": "0 0 480 160",
     "nodes": [
-      { "id": "client", "label": "Client", "x": 60, "y": 80, "description": "Sends requests to the API." },
-      { "id": "api", "label": "API", "x": 230, "y": 80, "description": "Single server checking its own local counter." },
-      { "id": "counter", "label": "In-Memory Counter", "x": 400, "y": 80, "description": "Resets every fixed window (e.g. once per minute). Doesn't share state across servers." }
+      {
+        "id": "client",
+        "label": "Client",
+        "x": 60,
+        "y": 80,
+        "description": "Sends requests to the API."
+      },
+      {
+        "id": "api",
+        "label": "API",
+        "x": 230,
+        "y": 80,
+        "description": "Single server checking its own local counter."
+      },
+      {
+        "id": "counter",
+        "label": "In-Memory Counter",
+        "x": 400,
+        "y": 80,
+        "description": "Resets every fixed window (e.g. once per minute). Doesn't share state across servers."
+      }
     ],
     "edges": [
-      { "from": "client", "to": "api" },
-      { "from": "api", "to": "counter" }
+      {
+        "from": "client",
+        "to": "api"
+      },
+      {
+        "from": "api",
+        "to": "counter"
+      }
     ]
   },
   "scaled": {
-    "viewBox": "0 0 480 160",
     "nodes": [
-      { "id": "client", "label": "Client", "x": 60, "y": 80, "description": "Sends requests to the API." },
-      { "id": "gateway", "label": "API Gateway", "x": 230, "y": 80, "description": "Checks the shared limit before routing to a backend server." },
-      { "id": "redis", "label": "Redis Sliding Window", "x": 400, "y": 80, "description": "Shared counter across all servers; sliding window avoids the fixed-window boundary burst." }
+      {
+        "id": "client",
+        "label": "Client",
+        "x": 60,
+        "y": 80,
+        "description": "Sends requests to the API."
+      },
+      {
+        "id": "gateway",
+        "label": "API Gateway",
+        "x": 230,
+        "y": 80,
+        "description": "Checks the shared limit before routing to a backend server."
+      },
+      {
+        "id": "redis",
+        "label": "Redis Sliding Window",
+        "x": 400,
+        "y": 80,
+        "description": "Shared counter across all servers; sliding window avoids the fixed-window boundary burst."
+      }
     ],
     "edges": [
-      { "from": "client", "to": "gateway" },
-      { "from": "gateway", "to": "redis" }
+      {
+        "from": "client",
+        "to": "gateway"
+      },
+      {
+        "from": "gateway",
+        "to": "redis"
+      }
     ]
   },
   "advanced": {
-    "viewBox": "0 0 480 160",
     "nodes": [
-      { "id": "client", "label": "Client", "x": 40, "y": 80, "description": "Sends requests." },
-      { "id": "edge", "label": "Edge Rate Limiter", "x": 160, "y": 80, "description": "Rejects abusive traffic before it reaches backend servers." },
-      { "id": "bucket", "label": "Token Bucket (Redis)", "x": 290, "y": 80, "description": "Refills at a steady rate; allows short bursts up to the bucket size." },
-      { "id": "tiering", "label": "Tiered Limits", "x": 410, "y": 40, "description": "Different limits per endpoint — writes stricter than reads." },
-      { "id": "api", "label": "Backend API", "x": 410, "y": 140, "description": "Only sees traffic that passed the limiter." }
+      {
+        "id": "client",
+        "label": "Client",
+        "x": 40,
+        "y": 80,
+        "description": "Sends requests."
+      },
+      {
+        "id": "edge",
+        "label": "Edge Rate Limiter",
+        "x": 160,
+        "y": 80,
+        "description": "Rejects abusive traffic before it reaches backend servers."
+      },
+      {
+        "id": "bucket",
+        "label": "Token Bucket (Redis)",
+        "x": 290,
+        "y": 80,
+        "description": "Refills at a steady rate; allows short bursts up to the bucket size."
+      },
+      {
+        "id": "tiering",
+        "label": "Tiered Limits",
+        "x": 410,
+        "y": 40,
+        "description": "Different limits per endpoint \u2014 writes stricter than reads."
+      },
+      {
+        "id": "api",
+        "label": "Backend API",
+        "x": 410,
+        "y": 140,
+        "description": "Only sees traffic that passed the limiter."
+      }
     ],
     "edges": [
-      { "from": "client", "to": "edge" },
-      { "from": "edge", "to": "bucket" },
-      { "from": "bucket", "to": "tiering" },
-      { "from": "tiering", "to": "api" }
+      {
+        "from": "client",
+        "to": "edge"
+      },
+      {
+        "from": "edge",
+        "to": "bucket"
+      },
+      {
+        "from": "bucket",
+        "to": "tiering"
+      },
+      {
+        "from": "tiering",
+        "to": "api"
+      }
     ]
   }
 }

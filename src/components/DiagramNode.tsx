@@ -1,7 +1,5 @@
 import type { DiagramNodeData } from "../lib/diagram-types";
-
-const BOX_WIDTH = 130;
-const BOX_HEIGHT = 46;
+import { NODE_WIDTH, NODE_HEIGHT, wrapLabel } from "../lib/diagram-constants";
 
 type Props = {
   node: DiagramNodeData;
@@ -15,10 +13,13 @@ type Props = {
 
 export default function DiagramNode({ node, accent, accentGlow, isHovered, isSelected, onHover, onSelect }: Props) {
   const active = isHovered || isSelected;
+  const lines = wrapLabel(node.label);
+  const lineHeight = 14;
+  const startY = NODE_HEIGHT / 2 - ((lines.length - 1) * lineHeight) / 2;
 
   return (
     <g
-      transform={`translate(${node.x - BOX_WIDTH / 2}, ${node.y - BOX_HEIGHT / 2})`}
+      transform={`translate(${node.x - NODE_WIDTH / 2}, ${node.y - NODE_HEIGHT / 2})`}
       onMouseEnter={() => onHover(node.id)}
       onMouseLeave={() => onHover(null)}
       onClick={() => onSelect(node.id)}
@@ -34,8 +35,8 @@ export default function DiagramNode({ node, accent, accentGlow, isHovered, isSel
       style={{ cursor: "pointer" }}
     >
       <rect
-        width={BOX_WIDTH}
-        height={BOX_HEIGHT}
+        width={NODE_WIDTH}
+        height={NODE_HEIGHT}
         rx={8}
         fill="var(--color-surface)"
         stroke={active ? accent : "var(--color-border)"}
@@ -46,16 +47,18 @@ export default function DiagramNode({ node, accent, accentGlow, isHovered, isSel
         }}
       />
       <text
-        x={BOX_WIDTH / 2}
-        y={BOX_HEIGHT / 2}
+        x={NODE_WIDTH / 2}
         textAnchor="middle"
-        dominantBaseline="middle"
         fill="var(--color-text)"
         fontFamily="var(--font-mono)"
         fontSize="12"
         fontWeight={active ? 600 : 500}
       >
-        {node.label}
+        {lines.map((line, i) => (
+          <tspan key={i} x={NODE_WIDTH / 2} y={startY + i * lineHeight} dominantBaseline="middle">
+            {line}
+          </tspan>
+        ))}
       </text>
     </g>
   );

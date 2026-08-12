@@ -14,6 +14,31 @@ usually the first subsystem discussed in a Twitter interview because it
 forces you to immediately confront a read/write tradeoff that shapes
 everything else.
 
+## API Design
+
+```http
+GET /api/timeline?cursor=&limit=20
+```
+```json
+// 200 OK
+{
+  "items": [
+    {
+      "tweet_id": "1683072000000123",
+      "author_id": "u_42",
+      "text": "hello world",
+      "created_at": "2026-08-12T10:00:00Z"
+    }
+  ],
+  "next_cursor": "eyJ0IjoxNzIzNDU2fQ"
+}
+```
+
+The `cursor` is opaque to the client — it encodes whatever the timeline
+implementation needs internally (a timestamp, a Redis sorted-set score, a
+per-source offset for the hybrid tier) so the storage strategy can change
+underneath the API without breaking clients.
+
 ## Basic Approach — Fan-out on Read (Pull Model)
 
 ### How it works

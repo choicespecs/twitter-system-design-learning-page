@@ -12,7 +12,6 @@ export type DiagramEdgeData = {
 };
 
 export type DiagramTier = {
-  viewBox: string;
   nodes: DiagramNodeData[];
   edges: DiagramEdgeData[];
 };

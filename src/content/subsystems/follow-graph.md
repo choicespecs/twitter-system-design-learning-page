@@ -15,6 +15,33 @@ challenge is that you need two different query directions to both be fast:
 those (followers) can be a list of tens of millions for a celebrity
 account.
 
+## API Design
+
+```http
+POST /api/users/{id}/follow
+```
+```json
+// 204 No Content
+```
+```http
+GET /api/users/{id}/followers?cursor=&limit=50
+```
+```json
+// 200 OK
+{
+  "items": [
+    { "id": "u_7", "username": "alice" },
+    { "id": "u_19", "username": "bob" }
+  ],
+  "next_cursor": "eyJvZmZzZXQiOjUwfQ"
+}
+```
+
+Followers is always cursor-paginated, even in the basic design — this is
+the one place where it's worth designing the API ahead of the
+implementation: a client that only ever sees a page at a time never has to
+change, no matter which storage tier is behind it.
+
 ## Basic Approach — Relational Table
 
 ### How it works

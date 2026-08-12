@@ -14,6 +14,38 @@ when something happens," it's decoupling that write from the action that
 triggered it, and avoiding flooding a popular user with a notification for
 every single one of a million replies.
 
+## API Design
+
+```http
+GET /api/notifications?cursor=
+```
+```json
+// 200 OK
+{
+  "items": [
+    {
+      "id": "n_1",
+      "type": "like",
+      "actor_ids": ["u_7", "u_19"],
+      "tweet_id": "1683072000000123",
+      "read": false,
+      "created_at": "2026-08-12T10:02:00Z"
+    }
+  ],
+  "next_cursor": "eyJwYWdlIjoyfQ"
+}
+```
+```http
+POST /api/notifications/{id}/read
+```
+```json
+// 204 No Content
+```
+
+`actor_ids` is a list, not a single field — that's the API surfacing the
+aggregation window from the advanced tier directly: one notification
+object can represent 2 people or 200.
+
 ## Basic Approach — Synchronous Write + Polling
 
 ### How it works

@@ -14,6 +14,34 @@ compared to the others, but it's a frequent interview add-on question
 because it tests whether you understand distributed state and algorithmic
 tradeoffs, not just "add a component."
 
+## API Design
+
+Rate limiting isn't its own resource — it's middleware that wraps every
+other endpoint. It shows up in the response headers of any request, and as
+a distinct error response once the limit is hit.
+
+```http
+POST /api/tweets
+```
+```http
+// 200/201 response headers
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 287
+X-RateLimit-Reset: 1723459200
+```
+```json
+// 429 Too Many Requests
+{
+  "error": "rate_limited",
+  "retry_after_seconds": 42
+}
+```
+
+Returning the limiter's state on *every* response (not just the 429) lets
+well-behaved clients back off before they ever get rejected — worth
+mentioning explicitly, since it's a detail that separates "I added a rate
+limiter" from "I designed a rate-limited API."
+
 ## Basic Approach — Fixed Window Counter
 
 ### How it works

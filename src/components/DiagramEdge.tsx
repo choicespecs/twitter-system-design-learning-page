@@ -1,6 +1,15 @@
 import type { DiagramNodeData } from "../lib/diagram-types";
+import { NODE_WIDTH, NODE_HEIGHT } from "../lib/diagram-constants";
 
-const INSET = 68;
+const HALF_W = NODE_WIDTH / 2;
+const HALF_H = NODE_HEIGHT / 2;
+
+/** Distance from a box's center to its edge along a given direction. */
+function boxExitDistance(ux: number, uy: number) {
+  const tx = ux !== 0 ? HALF_W / Math.abs(ux) : Infinity;
+  const ty = uy !== 0 ? HALF_H / Math.abs(uy) : Infinity;
+  return Math.min(tx, ty);
+}
 
 function shorten(from: DiagramNodeData, to: DiagramNodeData) {
   const dx = to.x - from.x;
@@ -8,7 +17,7 @@ function shorten(from: DiagramNodeData, to: DiagramNodeData) {
   const dist = Math.sqrt(dx * dx + dy * dy) || 1;
   const ux = dx / dist;
   const uy = dy / dist;
-  const inset = Math.min(INSET, dist / 2 - 4);
+  const inset = Math.min(boxExitDistance(ux, uy), dist / 2 - 4);
   return {
     x1: from.x + ux * inset,
     y1: from.y + uy * inset,
