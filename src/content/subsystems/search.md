@@ -2,7 +2,7 @@
 title: Search & Trending
 teaser: How do you make hundreds of millions of tweets searchable, and surface what's trending right now?
 category: scaling
-order: 1
+order: 2
 techChoices: ["Elasticsearch", "Kafka", "Flink", "Redis"]
 ---
 

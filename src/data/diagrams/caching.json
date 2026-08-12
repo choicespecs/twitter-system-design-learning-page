@@ -1,0 +1,42 @@
+{
+  "basic": {
+    "nodes": [
+      { "id": "client", "label": "Client", "x": 110, "y": 90, "description": "Makes a request that needs some data." },
+      { "id": "api", "label": "API", "x": 330, "y": 90, "description": "Forwards every read straight through, no caching layer." },
+      { "id": "db", "label": "Database", "x": 550, "y": 90, "description": "Handles every single read directly, even for the same hot data over and over." }
+    ],
+    "edges": [
+      { "from": "client", "to": "api" },
+      { "from": "api", "to": "db" }
+    ]
+  },
+  "scaled": {
+    "nodes": [
+      { "id": "client", "label": "Client", "x": 110, "y": 110, "description": "Sends a read or write request." },
+      { "id": "api", "label": "API", "x": 330, "y": 110, "description": "Checks Redis first on reads; on writes, updates the database then invalidates the cache key." },
+      { "id": "cache", "label": "Redis Cache", "x": 550, "y": 55, "description": "Serves hot reads directly. On a miss, falls through to the database and gets repopulated." },
+      { "id": "db", "label": "Database", "x": 550, "y": 165, "description": "Source of truth; only hit on a cache miss or a write." }
+    ],
+    "edges": [
+      { "from": "client", "to": "api" },
+      { "from": "api", "to": "cache" },
+      { "from": "api", "to": "db" },
+      { "from": "cache", "to": "db" }
+    ]
+  },
+  "advanced": {
+    "nodes": [
+      { "id": "client", "label": "Client", "x": 110, "y": 90, "description": "Sends a request." },
+      { "id": "local", "label": "Local Cache", "x": 330, "y": 90, "description": "In-process LRU cache on the API server itself, absorbing the very hottest small slice of traffic before any network hop." },
+      { "id": "redis", "label": "Redis (jittered TTL)", "x": 550, "y": 90, "description": "Shared cache with randomized TTLs so keys populated together don't all expire in the same instant." },
+      { "id": "coalesce", "label": "Request Coalescing", "x": 770, "y": 55, "description": "On a miss, only the first request queries the database; concurrent requests for the same key wait on that result instead of stampeding." },
+      { "id": "db", "label": "Database", "x": 770, "y": 165, "description": "Protected from stampedes and, for hot keys, only ever sees load from a single coalesced request at a time." }
+    ],
+    "edges": [
+      { "from": "client", "to": "local" },
+      { "from": "local", "to": "redis" },
+      { "from": "redis", "to": "coalesce" },
+      { "from": "coalesce", "to": "db" }
+    ]
+  }
+}
