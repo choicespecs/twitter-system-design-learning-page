@@ -4,22 +4,22 @@
       {
         "id": "client",
         "label": "Client",
-        "x": 60,
-        "y": 80,
+        "x": 110,
+        "y": 90,
         "description": "Submits a new tweet."
       },
       {
         "id": "api",
         "label": "API",
-        "x": 230,
-        "y": 80,
+        "x": 330,
+        "y": 90,
         "description": "Receives the write request."
       },
       {
         "id": "db",
         "label": "Database",
-        "x": 400,
-        "y": 80,
+        "x": 550,
+        "y": 90,
         "description": "Single relational database; auto-increment column provides the tweet ID."
       }
     ],
@@ -39,35 +39,35 @@
       {
         "id": "client",
         "label": "Client",
-        "x": 50,
+        "x": 110,
         "y": 110,
         "description": "Submits a new tweet."
       },
       {
         "id": "api",
         "label": "API",
-        "x": 180,
+        "x": 330,
         "y": 110,
         "description": "Receives the write and coordinates ID generation + routing."
       },
       {
         "id": "idgen",
         "label": "ID Generator",
-        "x": 320,
+        "x": 550,
         "y": 55,
         "description": "Snowflake-style: mints a unique, time-sortable ID with no central coordinator."
       },
       {
         "id": "router",
         "label": "Shard Router",
-        "x": 320,
+        "x": 550,
         "y": 165,
         "description": "Routes the write to the correct shard based on user_id or tweet_id."
       },
       {
         "id": "shards",
         "label": "Shards",
-        "x": 450,
+        "x": 770,
         "y": 165,
         "description": "Tweet storage split across many machines for write throughput."
       }
@@ -96,28 +96,28 @@
       {
         "id": "api",
         "label": "API",
-        "x": 50,
+        "x": 110,
         "y": 110,
         "description": "Receives the write and generates an ID."
       },
       {
         "id": "wal",
         "label": "Write-Ahead Log",
-        "x": 210,
+        "x": 330,
         "y": 110,
-        "description": "Kafka \u2014 the durable source of truth for 'a tweet was written'."
+        "description": "Kafka — the durable source of truth for 'a tweet was written'."
       },
       {
         "id": "store",
         "label": "Sharded Store",
-        "x": 380,
+        "x": 550,
         "y": 55,
         "description": "Durable storage, populated by consuming the log."
       },
       {
         "id": "downstream",
         "label": "Downstream Consumers",
-        "x": 380,
+        "x": 550,
         "y": 165,
         "description": "Fan-out and search indexing independently consume the same log."
       }

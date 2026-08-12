@@ -4,23 +4,23 @@
       {
         "id": "client",
         "label": "Client",
-        "x": 60,
-        "y": 80,
+        "x": 110,
+        "y": 90,
         "description": "Submits a search query."
       },
       {
         "id": "api",
         "label": "API",
-        "x": 230,
-        "y": 80,
+        "x": 330,
+        "y": 90,
         "description": "Forwards the query to storage."
       },
       {
         "id": "scan",
         "label": "Full Table Scan",
-        "x": 400,
-        "y": 80,
-        "description": "LIKE-match scan over the entire tweet table \u2014 too slow at scale."
+        "x": 550,
+        "y": 90,
+        "description": "LIKE-match scan over the entire tweet table — too slow at scale."
       }
     ],
     "edges": [
@@ -39,28 +39,28 @@
       {
         "id": "write",
         "label": "Tweet Write",
-        "x": 50,
+        "x": 110,
         "y": 55,
         "description": "A new tweet enters the system."
       },
       {
         "id": "indexer",
         "label": "Indexing Pipeline",
-        "x": 220,
+        "x": 330,
         "y": 55,
         "description": "Tokenizes the tweet and updates the inverted index near-real-time."
       },
       {
         "id": "index",
         "label": "Inverted Index",
-        "x": 400,
+        "x": 550,
         "y": 110,
-        "description": "term \u2192 tweet IDs. Query time depends on postings-list size, not corpus size."
+        "description": "term → tweet IDs. Query time depends on postings-list size, not corpus size."
       },
       {
         "id": "query",
         "label": "Search Query",
-        "x": 50,
+        "x": 110,
         "y": 165,
         "description": "Tokenized the same way, looked up directly against the index."
       }
@@ -85,22 +85,22 @@
       {
         "id": "stream",
         "label": "Tweet Stream",
-        "x": 50,
-        "y": 80,
+        "x": 110,
+        "y": 90,
         "description": "Same underlying write stream, consumed independently from search indexing."
       },
       {
         "id": "counter",
         "label": "Windowed Term Counter",
-        "x": 230,
-        "y": 80,
+        "x": 330,
+        "y": 90,
         "description": "Stream processor maintaining sliding-window mention counts per term."
       },
       {
         "id": "topk",
         "label": "Top-K Cache",
-        "x": 400,
-        "y": 80,
+        "x": 550,
+        "y": 90,
         "description": "Cached current trending list, served directly to clients."
       }
     ],

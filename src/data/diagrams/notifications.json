@@ -4,29 +4,29 @@
       {
         "id": "action",
         "label": "User Action",
-        "x": 50,
+        "x": 110,
         "y": 60,
         "description": "A like, reply, or follow occurs."
       },
       {
         "id": "api",
         "label": "API",
-        "x": 220,
+        "x": 330,
         "y": 60,
         "description": "Handles the action and writes the notification inline."
       },
       {
         "id": "row",
         "label": "Notification Row",
-        "x": 390,
+        "x": 550,
         "y": 60,
         "description": "Directly written as part of the request."
       },
       {
         "id": "client",
         "label": "Client",
-        "x": 220,
-        "y": 160,
+        "x": 330,
+        "y": 170,
         "description": "Periodically polls for new notifications."
       }
     ],
@@ -50,29 +50,29 @@
       {
         "id": "action",
         "label": "User Action",
-        "x": 50,
-        "y": 80,
+        "x": 110,
+        "y": 110,
         "description": "Publishes an event instead of writing inline."
       },
       {
         "id": "queue",
         "label": "Queue",
-        "x": 220,
-        "y": 80,
-        "description": "Kafka \u2014 decouples the action from notification delivery."
+        "x": 330,
+        "y": 110,
+        "description": "Kafka — decouples the action from notification delivery."
       },
       {
         "id": "service",
         "label": "Notification Service",
-        "x": 400,
-        "y": 40,
+        "x": 550,
+        "y": 55,
         "description": "Consumes events and creates notification records."
       },
       {
         "id": "push",
         "label": "Push Channel",
-        "x": 400,
-        "y": 140,
+        "x": 550,
+        "y": 165,
         "description": "WebSocket for active users, FCM/APNs for offline ones."
       }
     ],
@@ -96,36 +96,36 @@
       {
         "id": "queue",
         "label": "Queue",
-        "x": 40,
-        "y": 80,
+        "x": 110,
+        "y": 110,
         "description": "Incoming events from any action-producing service."
       },
       {
         "id": "aggregate",
         "label": "Aggregation Window",
-        "x": 180,
-        "y": 80,
+        "x": 330,
+        "y": 110,
         "description": "Groups related events, e.g. 'Alice, Bob + 40 others liked your tweet.'"
       },
       {
         "id": "service",
         "label": "Notification Service",
-        "x": 310,
-        "y": 80,
+        "x": 550,
+        "y": 110,
         "description": "Creates the (now grouped) notification record."
       },
       {
         "id": "prefs",
         "label": "Preference Filter",
-        "x": 430,
-        "y": 40,
+        "x": 770,
+        "y": 55,
         "description": "Applies mute/priority settings before delivery."
       },
       {
         "id": "push",
         "label": "Push Channel",
-        "x": 430,
-        "y": 140,
+        "x": 770,
+        "y": 165,
         "description": "Final real-time or push delivery."
       }
     ],
