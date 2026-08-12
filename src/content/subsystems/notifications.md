@@ -46,6 +46,44 @@ POST /api/notifications/{id}/read
 aggregation window from the advanced tier directly: one notification
 object can represent 2 people or 200.
 
+## Database Schema
+
+**Basic tier:**
+
+```sql
+CREATE TABLE notifications (
+  id          BIGSERIAL PRIMARY KEY,
+  user_id     BIGINT NOT NULL,        -- recipient
+  type        VARCHAR(20) NOT NULL,   -- 'like' | 'reply' | 'follow'
+  actor_ids   BIGINT[] NOT NULL,
+  tweet_id    BIGINT,
+  read        BOOLEAN NOT NULL DEFAULT false,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_notifications_user_created
+  ON notifications (user_id, created_at DESC);
+```
+
+`actor_ids` is an array column from the start, not a single `actor_id` —
+the schema is already shaped for aggregation before the advanced tier
+even introduces the aggregation window logic; the window just controls
+*when* a row gets multiple actors appended versus getting a new row.
+
+**Scaled tier — partitioned by recipient, same shape as `tweets_by_author`:**
+
+```
+notifications_by_user
+  partition key: user_id
+  clustering key: created_at DESC
+  columns: type, actor_ids, tweet_id, read
+```
+
+Same reasoning as Tweet Ingestion's scaled schema: a notification feed is
+always read "this user's notifications, paginated," so partitioning by
+the recipient turns that into a single-partition read instead of an
+index scan.
+
 ## Basic Approach — Synchronous Write + Polling
 
 ### How it works

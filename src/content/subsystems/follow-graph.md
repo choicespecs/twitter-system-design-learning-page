@@ -42,6 +42,46 @@ the one place where it's worth designing the API ahead of the
 implementation: a client that only ever sees a page at a time never has to
 change, no matter which storage tier is behind it.
 
+## Database Schema
+
+**Basic tier — one relational table, indexed both directions:**
+
+```sql
+CREATE TABLE follows (
+  follower_id  BIGINT NOT NULL,
+  followee_id  BIGINT NOT NULL,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (follower_id, followee_id)
+);
+
+CREATE INDEX idx_follows_followee
+  ON follows (followee_id, follower_id);
+```
+
+The primary key `(follower_id, followee_id)` makes "who does X follow"
+a direct primary-key range scan; the extra index makes "who follows X"
+equally direct instead of a full-table scan. Two indexes on one table —
+cheap here, but it's the same idea that motivates splitting into two
+separate structures once the table gets sharded.
+
+**Scaled tier — two independent key-value structures, not one table:**
+
+```
+following:{user_id}   → Set<followee_id>
+followers:{user_id}   → Set<follower_id>
+```
+```
+SADD  following:42 7        -- user 42 follows user 7
+SADD  followers:7 42        -- denormalized inverse, written at the same time
+SISMEMBER following:42 7    -- O(1) "does 42 follow 7?"
+```
+
+Notice this isn't one table with two indexes anymore — it's two
+independently-partitioned sets, each keyed by the user whose list it
+is. That's what makes both directions O(1)/O(n) direct reads instead of
+index scans, at the cost of the dual-write consistency issue called out
+in the Scaled Approach below.
+
 ## Basic Approach — Relational Table
 
 ### How it works

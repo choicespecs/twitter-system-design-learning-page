@@ -48,6 +48,49 @@ The `id` in the response is the Snowflake-generated ID, not a database
 auto-increment value — worth calling out explicitly, since it's the field
 that changes shape as the design scales from the basic to the scaled tier.
 
+## Database Schema
+
+**Basic tier — a single relational table:**
+
+```sql
+CREATE TABLE tweets (
+  id          BIGSERIAL PRIMARY KEY,
+  author_id   BIGINT NOT NULL REFERENCES users(id),
+  text        VARCHAR(280) NOT NULL,
+  media_ids   TEXT[],
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_tweets_author_created
+  ON tweets (author_id, created_at DESC);
+```
+
+The index exists to support the profile timeline read (Timeline
+Generation) — without it, "all of this author's tweets, newest first"
+degrades to a full table scan as the table grows.
+
+**Scaled tier — two denormalized tables, one per access pattern:**
+
+```
+tweets_by_id            (wide-column, e.g. Cassandra/DynamoDB)
+  partition key: tweet_id
+  columns: author_id, text, media_ids, created_at
+
+tweets_by_author         -- supports the profile timeline directly
+  partition key: author_id
+  clustering key: tweet_id DESC
+  columns: text, media_ids, created_at
+```
+
+This is the schema-level version of the same idea from the Advanced
+Approach below: instead of one normalized table serving every query
+shape, **model the schema around the queries you need**. `tweets_by_id`
+answers "look up this one tweet"; `tweets_by_author` answers "this
+author's timeline, paginated" directly from a single partition, no
+secondary index required. The tradeoff is the write path now writes the
+same tweet twice — an explicit, deliberate denormalization, not an
+oversight.
+
 ## Basic Approach — Single Database, Auto-Increment ID
 
 ### How it works

@@ -44,6 +44,41 @@ Two separate endpoints on purpose — mirroring the two separate pipelines
 underneath. `score` on a search result signals relevance ranking exists;
 `volume` on a trend signals it's a count, not a ranked match.
 
+## Database Schema
+
+Search doesn't use a row-and-column schema the way most of the other
+subsystems do — the "schema" is the structure of the inverted index and
+the trending counters.
+
+**Inverted index (scaled tier), conceptually one postings list per term:**
+
+```
+term:"worldcup" → [
+  { tweet_id: 1683072000000123, score: 8.7 },
+  { tweet_id: 1683072000000198, score: 6.2 },
+  ...
+]
+```
+
+A search engine like Elasticsearch manages this structure internally —
+worth knowing what it represents even if you'd never hand-roll it: a
+query for one term is a single lookup by that term's key, returning an
+already-sorted-by-relevance list, which is what makes it fast regardless
+of how many tweets total exist in the corpus.
+
+**Trending counters (advanced tier), Redis-backed sliding window:**
+
+```
+INCR   trend:worldcup:2026081210          -- bucket keyed by term + minute
+EXPIRE trend:worldcup:2026081210 600      -- bucket expires after the window passes
+ZADD   trending:global 128000 "#WorldCup" -- sorted set ranks current top-K
+```
+
+Each time bucket is its own key so aging out old activity is just letting
+keys expire — no explicit cleanup job needed. The global sorted set is
+the thing actually read by `GET /api/trends`; it's small and cheap to
+query regardless of how many buckets exist behind it.
+
 ## Basic Approach — Scan and Filter
 
 ### How it works

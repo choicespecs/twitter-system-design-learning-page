@@ -42,6 +42,25 @@ well-behaved clients back off before they ever get rejected — worth
 mentioning explicitly, since it's a detail that separates "I added a rate
 limiter" from "I designed a rate-limited API."
 
+## Database Schema
+
+No durable table here — the limiter's state is short-lived by design, so
+it lives entirely in Redis, keyed by user and endpoint:
+
+```
+ratelimit:{user_id}:{endpoint}  → Hash { tokens, last_refill_ts }
+```
+```
+HGETALL ratelimit:42:post_tweet
+  → { "tokens": "4", "last_refill_ts": "1723459180" }
+```
+
+A Lua script does the read-refill-decrement-write as one atomic step,
+which is the part worth remembering: without atomicity, two concurrent
+requests could both read `tokens: 1`, both decide they're allowed
+through, and the limit gets bypassed under exactly the concurrent load
+it's supposed to protect against.
+
 ## Basic Approach — Fixed Window Counter
 
 ### How it works

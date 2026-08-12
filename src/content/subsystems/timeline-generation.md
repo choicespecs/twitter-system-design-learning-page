@@ -47,6 +47,32 @@ implementation needs internally (a timestamp, a Redis sorted-set score, a
 per-source offset for the hybrid tier) so the storage strategy can change
 underneath the API without breaking clients.
 
+## Database Schema
+
+The basic (pull) tier needs no dedicated schema of its own — it queries
+Tweet Ingestion's `tweets_by_author` table directly. The scaled and
+hybrid tiers introduce a precomputed structure:
+
+```
+timeline:{user_id}   → Sorted Set { member: tweet_id, score: created_at_epoch }
+```
+```
+ZADD    timeline:42 1723459200 1683072000000123   -- fan-out writes a tweet_id in
+ZREVRANGE timeline:42 0 19                         -- read: most recent 20 tweet_ids
+```
+
+Two details worth calling out explicitly:
+
+- **Only the `tweet_id` is stored, not the tweet content.** A timeline
+  read returns a page of IDs, then batch-fetches the full tweet objects
+  from `tweets_by_id` (Tweet Ingestion) or a tweet-content cache. This
+  keeps each of a user's potentially millions of fanned-out timeline
+  copies tiny — duplicating full tweet text across every follower's cache
+  would multiply storage cost by average follower count.
+- **The score is the timestamp**, not an incrementing counter — that's
+  what makes `ZREVRANGE` a cheap, already-sorted range read instead of a
+  read-then-sort step.
+
 ## Basic Approach — Fan-out on Read (Pull Model)
 
 ### How it works
