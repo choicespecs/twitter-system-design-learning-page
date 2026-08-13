@@ -3,7 +3,7 @@ import type { DiagramConfig, DiagramNodeData, TierKey } from "../lib/diagram-typ
 import { NODE_WIDTH, NODE_HEIGHT, CANVAS_PADDING } from "../lib/diagram-constants";
 import DiagramNode from "./DiagramNode";
 import DiagramEdge from "./DiagramEdge";
-import SidePanel from "./SidePanel";
+import NodeDetail from "./NodeDetail";
 
 /** Computes a viewBox that fits every node's full box extent, so nothing near the edges gets clipped. */
 function computeViewBox(nodes: DiagramNodeData[]) {
@@ -109,8 +109,8 @@ export default function DiagramCanvas({ config, accent, accentGlow }: Props) {
             />
           ))}
         </svg>
-        <SidePanel node={selectedNode} accent={accent} onClose={() => setSelectedId(null)} />
       </div>
+      <NodeDetail node={selectedNode} accent={accent} onClose={() => setSelectedId(null)} />
       <p className="hint">Click a node to see what it does. Switch tiers above to see how the design scales.</p>
 
       <style>{`
@@ -151,7 +151,6 @@ export default function DiagramCanvas({ config, accent, accentGlow }: Props) {
           background: var(--color-border);
         }
         .canvas-frame {
-          position: relative;
           overflow: hidden;
           background: var(--color-surface);
           border: 1px solid var(--color-border);
