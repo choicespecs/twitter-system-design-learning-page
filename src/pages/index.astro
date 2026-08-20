@@ -13,6 +13,62 @@ const grouped = (Object.keys(CATEGORY_META) as Category[]).map((category) => ({
     .filter((s) => s.data.category === category)
     .sort((a, b) => a.data.order - b.data.order),
 }));
+
+const core = [
+  {
+    method: "POST",
+    path: "/api/tweets",
+    subsystem: "tweet-ingestion",
+    subsystemLabel: "Tweet Ingestion",
+    why: "The write. Every other subsystem exists to do something with this one event — deliver it, index it, notify on it.",
+  },
+  {
+    method: "GET",
+    path: "/api/timeline",
+    subsystem: "timeline-generation",
+    subsystemLabel: "Timeline Generation",
+    why: "The read, and the hard problem. This one endpoint is what forces the pull vs. push vs. hybrid conversation — the centerpiece of the interview.",
+  },
+  {
+    method: "POST",
+    path: "/api/users/{id}/follow",
+    subsystem: "follow-graph",
+    subsystemLabel: "Follow Graph",
+    why: "The edge connecting the other two. Without it, a “timeline” is just a pile of tweets — this is what makes it personal.",
+  },
+];
+
+const later = [
+  { label: "Profile timeline", path: "GET /api/users/{id}/tweets", subsystem: "timeline-generation", subsystemLabel: "Timeline Generation" },
+  { label: "Followers list", path: "GET /api/users/{id}/followers", subsystem: "follow-graph", subsystemLabel: "Follow Graph" },
+  { label: "Search", path: "GET /api/search", subsystem: "search", subsystemLabel: "Search & Trending" },
+  { label: "Trending", path: "GET /api/trends", subsystem: "search", subsystemLabel: "Search & Trending" },
+  { label: "Notifications", path: "GET /api/notifications", subsystem: "notifications", subsystemLabel: "Notifications" },
+  { label: "Rate limiting", path: "cross-cutting", subsystem: "rate-limiting", subsystemLabel: "Rate Limiting" },
+  { label: "Caching", path: "cross-cutting", subsystem: "caching", subsystemLabel: "Caching Layer" },
+];
+
+const outOfScope = [
+  "Direct messages — a different read/write and encryption model entirely.",
+  "Ads & monetization — an orthogonal ranking and billing system.",
+  "Spaces / live media — real-time streaming, not a feed problem.",
+  "Payments, video transcoding, multi-region writes — worth naming as real, but follow-ups, not a first pass.",
+];
+
+const priorities = [
+  {
+    label: "Read:write ratio",
+    detail: "Reads outnumber writes by orders of magnitude — this one fact justifies caching and push fan-out before anything else does.",
+  },
+  {
+    label: "Availability over strict consistency",
+    detail: "A stale timeline or slightly-off follower count is fine; a failed tweet post or a feed that's down is not.",
+  },
+  {
+    label: "Writes never block on fan-out",
+    detail: "Posting a tweet returns immediately — delivering it to followers happens asynchronously, off the request path.",
+  },
+];
 ---
 
 <AppShell title="Home">
@@ -25,6 +81,86 @@ const grouped = (Object.keys(CATEGORY_META) as Category[]).map((category) => ({
       room.
     </p>
   </header>
+
+  <section class="scope">
+    <p class="eyebrow">Minute one — before any subsystem</p>
+    <h2>Scoping "Design Twitter"</h2>
+    <p class="lede">
+      Twitter has dozens of features. An interview goes better with three:
+      "I'll start here — post a tweet, see a feed of the people I follow, and
+      follow people. That's the whole product in miniature. I'll name what's
+      missing and expand into it once we've nailed this."
+    </p>
+
+    <h3 class="section-label">The core — say this first</h3>
+    <ol class="endpoints">
+      {
+        core.map((ep) => (
+          <li>
+            <div class="endpoint-head">
+              <span class={`method ${ep.method === "GET" ? "get" : "post"}`}>{ep.method}</span>
+              <code class="path">{ep.path}</code>
+            </div>
+            <p class="why">
+              {ep.why}{" "}
+              <a href={withBase(`/subsystems/${ep.subsystem}`)} class="jump">
+                {ep.subsystemLabel} →
+              </a>
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <h3 class="section-label">Expand on later</h3>
+    <p class="later-intro">
+      Named up front so the interviewer knows you know they exist — detailed
+      only once the core holds up, or if they ask. Each one is a real
+      subsystem in this guide.
+    </p>
+    <ul class="later-list">
+      {
+        later.map((item) => (
+          <li>
+            <span class="later-label">{item.label}</span>
+            <code class="later-path">{item.path}</code>
+            <a href={withBase(`/subsystems/${item.subsystem}`)} class="jump">
+              {item.subsystemLabel} →
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="scope-secondary">
+      <div class="scope-box">
+        <h3 class="section-label">Explicitly out of scope</h3>
+        <ul>
+          {outOfScope.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+      <div class="scope-box">
+        <h3 class="section-label">Non-functional priorities</h3>
+        <ul class="priorities">
+          {
+            priorities.map((p) => (
+              <li>
+                <strong>{p.label}.</strong> {p.detail}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+
+    <p class="vocalize">
+      <strong>How to open with this out loud:</strong> name the three core
+      endpoints before drawing a single box, say why each one earns its
+      place, then rattle off the "expand on later" list in one breath —
+      that's what signals you're scoping the problem deliberately, not
+      stalling because you don't know where to start.
+    </p>
+  </section>
 
   {
     grouped.map(({ category, meta, items }) => (
@@ -62,6 +198,204 @@ const grouped = (Object.keys(CATEGORY_META) as Category[]).map((category) => ({
   .intro p {
     color: var(--color-text-muted);
     font-size: var(--text-base);
+  }
+
+  .scope {
+    margin-bottom: var(--space-8);
+    padding: var(--space-6);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent-mint);
+    text-shadow: 0 0 8px var(--glow-mint);
+    margin-bottom: var(--space-2);
+  }
+
+  .scope h2 {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-3);
+  }
+
+  .lede {
+    color: var(--color-text-muted);
+    max-width: 720px;
+    margin-bottom: var(--space-6);
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: var(--space-3);
+  }
+
+  .endpoints {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+  }
+
+  .endpoints li {
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .endpoint-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+  }
+
+  .method {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    border: 1px solid currentColor;
+  }
+
+  .method.get {
+    color: var(--color-accent-mint);
+    background: color-mix(in srgb, var(--color-accent-mint) 12%, transparent);
+  }
+
+  .method.post {
+    color: var(--color-accent-amber);
+    background: color-mix(in srgb, var(--color-accent-amber) 12%, transparent);
+  }
+
+  .path {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--color-text);
+  }
+
+  .why {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .jump {
+    color: var(--color-accent-mint);
+    white-space: nowrap;
+  }
+
+  .jump:hover {
+    text-decoration: underline;
+  }
+
+  .later-intro {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    max-width: 640px;
+    margin-bottom: var(--space-3);
+  }
+
+  .later-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--space-6);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .later-list li {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
+    padding: var(--space-2) var(--space-1);
+    border-bottom: 1px solid var(--color-border);
+    font-size: var(--text-sm);
+  }
+
+  .later-label {
+    color: var(--color-text);
+    font-weight: 500;
+    flex: 0 0 auto;
+    min-width: 130px;
+  }
+
+  .later-path {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    flex: 1;
+  }
+
+  .scope-secondary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    margin-bottom: var(--space-6);
+  }
+
+  .scope-box ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .scope-box li {
+    position: relative;
+    padding-left: var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .scope-box li::before {
+    content: "›";
+    position: absolute;
+    left: 0;
+    color: var(--color-accent-pink);
+  }
+
+  .priorities li::before {
+    color: var(--color-accent-amber);
+  }
+
+  .scope-box li strong {
+    color: var(--color-text);
+  }
+
+  .vocalize {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-5);
+  }
+
+  .vocalize strong {
+    color: var(--color-text);
+  }
+
+  @media (max-width: 700px) {
+    .scope {
+      padding: var(--space-4);
+    }
+
+    .scope-secondary {
+      grid-template-columns: 1fr;
+    }
   }
 
   .category {
